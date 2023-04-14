@@ -2,7 +2,6 @@
 Kura and Eda
 
 Runs locator network on image.
-
 '''
 import tensorflow as tf
 from tensorflow.keras import layers, models
