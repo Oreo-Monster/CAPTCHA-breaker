@@ -20,7 +20,10 @@ def preprocess_image_data(path_to_x, path_to_y):
     #Converting to greyscale
     x = np.mean(x, axis=3)
     #Normalizing
-    x /= 256
+    minx = np.min(x, axis=(1,2))
+    maxx = np.max(x, axis=(1,2)) - minx
+
+    x = (x-minx[:,None,None])/(maxx[:,None,None])
     #Shuffling
     idx = np.arange(x.shape[0])
     np.random.shuffle(idx)
@@ -33,7 +36,6 @@ def preprocess_image_data(path_to_x, path_to_y):
     np.save(f"{path_to_x[:-4]}_preprocessed.npy", x)
     np.save(f"{path_to_y[:-4]}_preprocessed.npy", y)
 
-    return x, y
 
 def split(path_to_x, path_to_y, split_ratio=0.8, test_split=3000 ):
     '''Preprocess data first!'''
