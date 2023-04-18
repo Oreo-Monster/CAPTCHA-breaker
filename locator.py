@@ -53,7 +53,7 @@ class Locator_Net():
 
         row = np.zeros(((img_x-2*padding), ker_y, ker_x, n_chan))
 
-        for i in tqdm (range(padding, img_y-padding), desc="Scanning Image..."):
+        for i in tqdm (range(padding, img_y-padding), disable=(not verbose) ,desc="Scanning Image..."):
             #Collect all frames from a row into memory    
             for j in range(padding, img_x-padding):
                 correction = 0 if ker_x%2 == 0 else 1
