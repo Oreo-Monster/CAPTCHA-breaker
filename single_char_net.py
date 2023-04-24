@@ -49,9 +49,9 @@ class Single_Char_Net:
         return self.net.fit(x_train, y_train_ind, epochs=12, 
                             validation_data=(x_val, y_val_ind), batch_size=mini_batch)
 
-    def predict(self, x):
+    def predict(self, x, verbose=False):
         if len(x.shape) == 3:
             x = x[None, :, :, :]
-        net_acts = self.net.predict(x)
+        net_acts = self.net.predict(x, verbose=verbose)
         y = np.argmax(net_acts,axis=1)
         return np.vectorize(self.ind2char.get)(y)

@@ -51,15 +51,15 @@ class Locator_Net():
         if verbose:
             print(f"Begening locator on {num_iter} pixels")
 
-        row = np.zeros(((img_x-2*padding), ker_y, ker_x, n_chan))
-
+        frames = np.zeros((num_iter, ker_y, ker_x, n_chan))
+        iter = 0
         for i in tqdm (range(padding, img_y-padding), disable=(not verbose) ,desc="Scanning Image..."):
             #Collect all frames from a row into memory    
             for j in range(padding, img_x-padding):
                 correction = 0 if ker_x%2 == 0 else 1
-                row[j-padding,:,:,:] = img[i-padding:i+padding+correction, j-padding:j+padding+correction, :]
-                
+                frames[iter,:,:,:] = img[i-padding:i+padding+correction, j-padding:j+padding+correction, :]
+                iter += 1   
             #feed row into network for predictions (hopefully with parellel proc.)        
-            filteredImg[i, padding:img_x-padding, :] = self.segnet.predict(row, verbose=0)
+        filteredImg[padding:img_y-padding, padding:img_x-padding, :] = self.segnet.predict(frames, verbose=verbose).reshape(img_y-2*padding, img_x-2*padding, 1)
 
         return filteredImg

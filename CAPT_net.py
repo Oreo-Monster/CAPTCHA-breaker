@@ -30,24 +30,36 @@ class CAPT_NET:
         return self.class_net.train(x_train, y_train, x_val, y_val, epochs, mini_batch)
 
     def cluster(self, heat_map):
-        threshold = np.squeeze(np.where(heat_map > 0.5, 1, 0)) 
+        thresh_val = 0.5
+        threshold = np.squeeze(np.where(heat_map > thresh_val, 1, 0)) 
         idx_row, idx_col = np.nonzero(threshold)
         non_zeros = list(zip(idx_row, idx_col)) 
-        self.kmeans.fit(non_zeros)
-        return self.kmeans.cluster_centers_
+        #In case there are not enough points, lower threshold until
+        #there are enough
+        while len(non_zeros) < self.K and thresh_val > 0.01:
+            thresh_val -= 0.01
+            threshold = np.squeeze(np.where(heat_map > thresh_val, 1, 0)) 
+            idx_row, idx_col = np.nonzero(threshold)
+            non_zeros = list(zip(idx_row, idx_col)) 
+        #Sill edge case of not enough points
+        if len(non_zeros) >= self.K:
+            self.kmeans.fit(non_zeros)
+            return self.kmeans.cluster_centers_
+        else:
+            return None
 
     def predict(self, x):
         heat_map = self.loc_net.predict(x, verbose = self.verbose)
         centriods = self.cluster(heat_map)
+        if centriods is None:
+            return "", heat_map, []
         centriods.sort(axis=0)
         prediction = ""
         for i in range(self.K):
             cent = centriods[i,:]
-            cent0 = int(cent[0])
-            cent1 = int(cent[1])
+            cent0 = min(max(int(cent[0]), 16), x.shape[0]-17)
+            cent1 = min(max(int(cent[1]), 16), x.shape[1]-17)
             cropped = x[cent0-16:cent0+16 , cent1-16:cent1+16,:]
-            print(cropped.shape)
-
             prediction += self.class_net.predict(cropped)[0]
 
         return prediction, heat_map, centriods
